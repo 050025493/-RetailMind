@@ -1,5 +1,5 @@
 import { VoiceQueryInterface } from "@/components/VoiceQueryInterface";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
 export default function Rules() {
   return (

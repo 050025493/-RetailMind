@@ -1,6 +1,6 @@
 import { ScenarioBuilder } from "@/components/ScenarioBuilder";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Button } from "@/components/ui/buttonVariants";
 import { Save, Trash2 } from "lucide-react";
 
 export default function Scenarios() {

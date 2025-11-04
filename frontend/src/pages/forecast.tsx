@@ -1,7 +1,7 @@
 import { DemandForecastChart } from "@/components/DemandForecastChart";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/buttonVariants";
+import { Input } from "@/components/ui/Input";
 import { Search, Download } from "lucide-react";
 
 export default function Forecast() {

@@ -1,9 +1,9 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/Tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import Dashboard from "@/pages/Dashboard";
@@ -13,10 +13,11 @@ import Competitors from "@/pages/Competitors";
 import Promo from "@/pages/Promo";
 import Scenarios from "@/pages/Scenarios";
 import Rules from "@/pages/Rules";
-import NotFound from "@/pages/not-found";
+import NotFound from "@/pages/NotFound";
 
 function Router() {
   return (
+    
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/forecast" component={Forecast} />

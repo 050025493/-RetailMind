@@ -1,6 +1,6 @@
 import { PromoSimulator } from "@/components/PromoSimulator";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
+
 import { CalendarDays, TrendingUp } from "lucide-react";
 
 export default function Promo() {
