@@ -55,7 +55,7 @@ export default function Competitors() {
       </Card>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <CompetitorPriceCard productName="Wireless Headphones Pro" yourPrice={7469} competitors={[{ name: "Amazon", price: 7054 }, { name: "Flipkart", price: 7262 },]} status="overpriced"/>
-        <CompetitorPriceCard productName="Smart Watch Elite" yourPrice={24817} competitors={[{ name: "Amazon", price: 27389 }, { name: "Tata Cliq", price: 25730 },]} status="underpriced"/>
+        <CompetitorPriceCard productName="Smart Watch Elite" yourPrice={24817} competitors={[{ name: "Amazon", price: 27389 }, { name: "Flipkart", price: 25730 },]} status="underpriced"/>
         <CompetitorPriceCard productName="Gaming Mouse RGB" yourPrice={4149} competitors={[{ name: "Amazon", price: 4398 }, { name: "Croma", price: 4149 },]} status="competitive"/>
       </div>
     </div>

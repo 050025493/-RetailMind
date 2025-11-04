@@ -28,7 +28,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <div className="px-6 py-4">
-          <h2 className="text-xl font-bold">AI Pricing</h2>
+          <h2 className="text-xl font-bold">RetailMind</h2>
           <p className="text-xs text-muted-foreground">Dashboard</p>
         </div>
         <SidebarGroup>

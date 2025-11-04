@@ -28,22 +28,36 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       <div>
-        <h1 className="text-3xl font-semibold">Dashboard</h1>
+        <h1 className="text-3xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Dashboard
+        </h1>
         <p className="mt-1 text-muted-foreground">Overview of your pricing performance</p>
       </div>
 
+      {/* Stats Grid with enhanced styling */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
+        {stats.map((stat, index) => (
+          <Card 
+            key={stat.title}
+            className="stat-card overflow-hidden transition-all hover:scale-[1.02] cursor-pointer"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
+              </CardTitle>
+              <div className="p-2 rounded-lg bg-primary/10">
+                <stat.icon className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className={`text-xs ${stat.trend === 'up' ? 'text-green-500' : 'text-muted-foreground'}`}>
+              <p className={`text-xs flex items-center gap-1 mt-1 ${
+                stat.trend === 'up' ? 'text-green-500' : 'text-muted-foreground'
+              }`}>
+                {stat.trend === 'up' && <TrendingUp className="h-3 w-3" />}
                 {stat.change} from last month
               </p>
             </CardContent>
@@ -51,64 +65,149 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue Trend</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+            <CardTitle className="text-lg">Revenue Trend</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-1))" name="Revenue" strokeWidth={2} />
-                <Line type="monotone" dataKey="target" stroke="hsl(var(--chart-2))" name="Target" strokeWidth={2} strokeDasharray="5 5" />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent className="pt-6">
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis 
+                    dataKey="month" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false}
+                    className="text-muted-foreground"
+                  />
+                  <YAxis 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false}
+                    className="text-muted-foreground"
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                    }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="hsl(var(--chart-1))" 
+                    name="Revenue" 
+                    strokeWidth={3}
+                    dot={{ fill: 'hsl(var(--chart-1))', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="target" 
+                    stroke="hsl(var(--chart-2))" 
+                    name="Target" 
+                    strokeWidth={2} 
+                    strokeDasharray="5 5"
+                    dot={{ fill: 'hsl(var(--chart-2))', r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales by Category</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-secondary/50 to-transparent">
+            <CardTitle className="text-lg">Sales by Category</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis dataKey="category" type="category" width={100} fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-                <Bar dataKey="sales" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="pt-6">
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categoryData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis 
+                    type="number" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false}
+                    className="text-muted-foreground"
+                  />
+                  <YAxis 
+                    dataKey="category" 
+                    type="category" 
+                    width={100} 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false}
+                    className="text-muted-foreground"
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="sales" 
+                    fill="hsl(var(--chart-1))" 
+                    radius={[0, 8, 8, 0]}
+                    className="hover:opacity-80 transition-opacity"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Price Alerts</CardTitle>
+      {/* Recent Alerts */}
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-amber-500/5 to-transparent">
+          <CardTitle className="text-lg">Recent Price Alerts</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="pt-6">
+          <div className="space-y-3">
             {[
               { product: "Wireless Headphones Pro", status: "Competitor price drop", severity: "high" },
               { product: "Smart Watch Elite", status: "Low stock alert", severity: "medium" },
               { product: "Gaming Mouse RGB", status: "Margin below target", severity: "medium" },
             ].map((alert, i) => (
-              <div key={i} className="flex items-center justify-between rounded-lg border p-3">
+              <div 
+                key={i} 
+                className="group flex items-center justify-between rounded-xl border p-4 transition-all hover:bg-muted/50 hover:border-primary/50 hover:shadow-md cursor-pointer"
+              >
                 <div className="flex items-center gap-3">
-                  <AlertCircle className={`h-5 w-5 ${alert.severity === 'high' ? 'text-red-500' : 'text-yellow-500'}`} />
+                  <div className={`p-2 rounded-lg ${
+                    alert.severity === 'high' 
+                      ? 'bg-red-500/10' 
+                      : 'bg-yellow-500/10'
+                  }`}>
+                    <AlertCircle className={`h-5 w-5 ${
+                      alert.severity === 'high' ? 'text-red-500' : 'text-yellow-500'
+                    }`} />
+                  </div>
                   <div>
-                    <p className="font-medium">{alert.product}</p>
+                    <p className="font-medium group-hover:text-primary transition-colors">
+                      {alert.product}
+                    </p>
                     <p className="text-sm text-muted-foreground">{alert.status}</p>
                   </div>
                 </div>
-                <span className={`text-xs font-medium ${alert.severity === 'high' ? 'text-red-500' : 'text-yellow-500'}`}>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                  alert.severity === 'high' 
+                    ? 'bg-red-500/10 text-red-500' 
+                    : 'bg-yellow-500/10 text-yellow-500'
+                }`}>
                   {alert.severity.toUpperCase()}
                 </span>
               </div>
