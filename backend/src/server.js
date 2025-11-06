@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import sequelize from "./config/database.js";
 import authRoutes from "./routes/auth.js";
 import User from "./models/User.js";
+import importRoutes from "./routes/import.js";
+
 
 dotenv.config();
 const app = express();
@@ -18,6 +20,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/import", importRoutes);
 
 // Sync Database
 sequelize.sync({ alter: true }).then(() => console.log("📦 Database synced"));
