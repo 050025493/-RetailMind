@@ -76,5 +76,4 @@ User.hasMany(Product, { foreignKey: 'userId', as: 'products' });
 
 export default Product;
 
-// Sync the model with the database
-await Product.sync();
+

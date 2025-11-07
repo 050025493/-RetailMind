@@ -3,13 +3,21 @@ import cors from "cors";
 import dotenv from "dotenv";
 import sequelize from "./config/database.js";
 import authRoutes from "./routes/auth.js";
-import User from "./models/User.js";
+import productRoutes from "./routes/products.js";
 import importRoutes from "./routes/import.js";
+import dashboardRoutes from "./routes/dashboard.js";
 
+
+// Import all models to ensure they are synced
+import User from "./models/User.js";
+import Product from "./models/Product.js";
+
+import DemandData from "./models/DemandData.js";
+import DemandForecast from "./models/DemandForecast.js";
+import forecastRoutes from "./routes/forecast.js";
 
 dotenv.config();
 const app = express();
-
 
 app.use(cors({
   origin: "http://localhost:5173",
@@ -20,12 +28,15 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/import", importRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/forecast", forecastRoutes);
 
 // Sync Database
 sequelize.sync({ alter: true }).then(() => console.log("📦 Database synced"));
 
 app.get("/", (req, res) => res.send("Backend running ✅"));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

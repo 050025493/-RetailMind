@@ -8,6 +8,7 @@ import {
   getProductStats,
   getCategories,
   getLowStock,
+  getProductSalesHistory, // <-- ADD THIS
 } from '../controllers/productController.js';
 import { verifyToken } from '../middleware/auth.js';
 
@@ -25,6 +26,11 @@ router.get('/low-stock', getLowStock);
 router.route('/')
   .get(getProducts)
   .post(createProduct);
+
+// --- ADD THIS NEW ROUTE ---
+// This must be defined *before* the '/:id' route
+router.get('/:id/history', getProductSalesHistory);
+// --- END NEW ROUTE ---
 
 router.route('/:id')
   .get(getProduct)

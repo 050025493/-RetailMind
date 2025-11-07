@@ -1,76 +1,59 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/buttonVariants";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { TrendingUp, DollarSign, Package, AlertCircle, Download } from "lucide-react";
-import { productsAPI, importAPI } from "@/lib/api";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import {
+  TrendingUp,
+  DollarSign,
+  Package,
+  AlertCircle,
+  Download,
+} from "lucide-react";
+import { dashboardAPI } from "@/lib/api";
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const [revenue, setRevenue] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
-    fetchDashboardData();
+    loadDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch product stats
-      const statsResponse = await productsAPI.getStats();
-      if (statsResponse.success) {
-        setStats(statsResponse.data);
-      }
+      const statsRes = await dashboardAPI.getStats();
+      const revenueRes = await dashboardAPI.getRevenueTrend();
+      const categoryRes = await dashboardAPI.getCategorySales();
+      const alertsRes = await dashboardAPI.getAlerts();
+      const topRes = await dashboardAPI.getTopProducts();
 
-      // Fetch all products
-      const productsResponse = await productsAPI.getAll();
-      if (productsResponse.success) {
-        setProducts(productsResponse.data);
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      setStats(statsRes.data || {});
+      setRevenue(revenueRes.data || []);
+      setCategories(categoryRes.data || []);
+      setAlerts(alertsRes.data || []);
+      setTopProducts(topRes.data || []);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleSeedDemo = async () => {
-    try {
-      setSeeding(true);
-      const response = await importAPI.seedDemo();
-      
-      if (response.success) {
-        alert('Demo data added successfully! Refreshing...');
-        await fetchDashboardData();
-      } else {
-        alert(response.message || 'Error adding demo data');
-      }
-    } catch (error) {
-      console.error('Error seeding demo:', error);
-      alert('Error adding demo data');
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  // Calculate category breakdown from real data
-  const categoryData = products.reduce((acc: any[], product: any) => {
-    const existing = acc.find(c => c.category === product.category);
-    const sales = parseFloat(product.currentPrice) * parseInt(product.stockQuantity || 0);
-    
-    if (existing) {
-      existing.sales += sales;
-    } else {
-      acc.push({
-        category: product.category || 'Uncategorized',
-        sales: sales
-      });
-    }
-    return acc;
-  }, []).sort((a, b) => b.sales - a.sales).slice(0, 5);
 
   if (loading) {
     return (
@@ -83,74 +66,45 @@ export default function Dashboard() {
     );
   }
 
-  // Show seed demo button if no products
-  if (products.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>No Products Found</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              You don't have any products yet. Get started by adding demo data or importing your products.
-            </p>
-            <div className="space-y-2">
-              <Button 
-                onClick={handleSeedDemo} 
-                disabled={seeding}
-                className="w-full"
-              >
-                {seeding ? 'Adding Demo Data...' : '🎯 Add Demo Products'}
-              </Button>
-              <Button variant="outline" className="w-full">
-                📥 Import Products (CSV)
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const statsCards = [
-    { 
-      title: "Total Revenue", 
-      value: `₹${Math.round(stats?.total_inventory_value || 0).toLocaleString('en-IN')}`,
-      change: "+12.5%",
+    {
+      title: "Total Revenue",
+      value: `₹${Math.round(stats?.total_revenue || 0).toLocaleString("en-IN")}`,
+      change: "+12.3%",
       icon: DollarSign,
-      trend: "up" 
+      trend: "up",
     },
-    { 
-      title: "Products Tracked", 
+    {
+      title: "Total Products",
       value: stats?.total_products || 0,
-      change: `+${products.length}`,
+      change: "+3",
       icon: Package,
-      trend: "up" 
+      trend: "up",
     },
-    { 
-      title: "Avg. Price", 
-      value: `₹${Math.round(stats?.avg_price || 0).toLocaleString('en-IN')}`,
+    {
+      title: "Avg. Margin",
+      value: `${stats?.avg_margin || 0}%`,
       change: "+2.1%",
       icon: TrendingUp,
-      trend: "up" 
+      trend: "up",
     },
-    { 
-      title: "Low Stock Items", 
-      value: products.filter(p => p.stockQuantity <= 10).length,
+    {
+      title: "Low Stock Items",
+      value: stats?.low_stock_count || 0,
       change: "Needs attention",
       icon: AlertCircle,
-      trend: "neutral" 
+      trend: "neutral",
     },
   ];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold">Dashboard</h1>
           <p className="mt-1 text-muted-foreground">
-            Real-time pricing insights and performance metrics
+            Real-time insights and product performance metrics
           </p>
         </div>
         <Button variant="outline" className="gap-2">
@@ -159,16 +113,27 @@ export default function Dashboard() {
         </Button>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
               <stat.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className={`text-xs ${stat.trend === 'up' ? 'text-green-500' : 'text-muted-foreground'}`}>
+              <p
+                className={`text-xs ${
+                  stat.trend === "up"
+                    ? "text-green-500"
+                    : stat.trend === "neutral"
+                    ? "text-yellow-500"
+                    : "text-red-500"
+                }`}
+              >
                 {stat.change}
               </p>
             </CardContent>
@@ -176,86 +141,135 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Revenue Trend & Category Sales */}
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Revenue Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Sales by Category</CardTitle>
+            <CardTitle>Revenue Trend (Last 6 Months)</CardTitle>
           </CardHeader>
           <CardContent>
-            {categoryData.length > 0 ? (
+            {revenue.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={categoryData} layout="vertical">
+                <LineChart data={revenue}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis dataKey="category" type="category" width={100} fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-                  <Bar dataKey="sales" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
-                </BarChart>
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#2563eb"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                No category data available
+              <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+                No revenue data available
               </div>
             )}
           </CardContent>
         </Card>
 
+        {/* Category Sales */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Products by Value</CardTitle>
+            <CardTitle>Sales by Category</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {products
-                .sort((a, b) => (b.currentPrice * b.stockQuantity) - (a.currentPrice * a.stockQuantity))
-                .slice(0, 5)
-                .map((product) => (
-                  <div key={product.id} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {product.stockQuantity} units @ ₹{parseFloat(product.currentPrice).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">
-                        ₹{(product.currentPrice * product.stockQuantity).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
+            {categories.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categories} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis
+                    dataKey="category"
+                    type="category"
+                    width={100}
+                    fontSize={12}
+                  />
+                  <Tooltip formatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} />
+                  <Bar dataKey="sales" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                No category sales data available
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {products.slice(0, 3).map((product) => (
-              <div key={product.id} className="flex items-center justify-between rounded-lg border p-3">
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-lg p-2 ${product.stockQuantity <= 10 ? 'bg-red-500/10' : 'bg-green-500/10'}`}>
-                    <Package className={`h-5 w-5 ${product.stockQuantity <= 10 ? 'text-red-500' : 'text-green-500'}`} />
-                  </div>
-                  <div>
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {product.stockQuantity <= 10 ? 'Low stock alert' : 'Stock level normal'}
+      {/* Top Products & Alerts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Top Products */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Products by Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topProducts.length > 0 ? (
+                topProducts.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between border-b pb-2 last:border-none"
+                  >
+                    <div>
+                      <p className="font-medium">{p.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {p.total_units_sold} units | ₹
+                        {parseFloat(p.current_price).toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                    <p className="font-bold text-primary">
+                      ₹{parseFloat(p.total_revenue).toLocaleString("en-IN")}
                     </p>
                   </div>
-                </div>
-                <span className="text-sm font-medium">
-                  {product.stockQuantity} units
-                </span>
+                ))
+              ) : (
+                <p className="text-muted-foreground">No top products available</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alerts */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Alerts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {alerts.length > 0 ? (
+              <div className="space-y-3">
+                {alerts.map((a) => (
+                  <div
+                    key={a.id}
+                    className={`p-3 rounded-lg border ${
+                      a.severity === "high"
+                        ? "border-red-500/40 bg-red-500/10 text-red-600"
+                        : "border-blue-500/40 bg-blue-500/10 text-blue-600"
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <p className="font-medium">{a.message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(a.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            ) : (
+              <p className="text-muted-foreground">No recent alerts</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

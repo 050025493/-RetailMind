@@ -8,6 +8,13 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   logging: false,
 });
 
+// ✅ Add this helper for raw SQL queries
+export const query = async (sql, params = []) => {
+  const [results] = await sequelize.query(sql, { bind: params });
+  return { rows: results };
+};
+
+// Test DB connection once
 try {
   await sequelize.authenticate();
   console.log("✅ Database connected successfully!");
@@ -16,4 +23,3 @@ try {
 }
 
 export default sequelize;
-

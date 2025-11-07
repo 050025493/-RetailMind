@@ -117,4 +117,19 @@ export const dashboardAPI = {
     });
     return res.json();
   },
+
+  markAlertRead: async (id: number) => {
+    const res = await fetch(`${API_URL}/dashboard/alerts/${id}/read`, {
+      method: "PUT",
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+
+  getTopProducts: async (limit = 5) => {
+    const res = await fetch(`${API_URL}/dashboard/top-products?limit=${limit}`, {
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
 };

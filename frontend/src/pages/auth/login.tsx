@@ -50,13 +50,12 @@ export default function Login() {
         <div className="absolute inset-0 bg-gradient-to-tr from-purple-800/70 to-pink-600/70 mix-blend-overlay" />
         <div className="relative z-10 space-y-6">
           <h1 className="text-5xl font-extrabold tracking-tight leading-tight drop-shadow-lg">
-            ReatilMind
+            RetailMind
           </h1>
           <p className="max-w-md text-lg opacity-90">
             Optimize prices, forecast demand, and stay ahead of competitors using real-time
             intelligence and machine learning models.
           </p>
-         
         </div>
       </div>
 
