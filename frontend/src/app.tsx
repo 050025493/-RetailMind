@@ -21,6 +21,7 @@ import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 
 
+
 // 🔒 Protected Route Component
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const token = localStorage.getItem("token");

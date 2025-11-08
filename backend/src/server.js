@@ -7,8 +7,7 @@ import productRoutes from "./routes/products.js";
 import importRoutes from "./routes/import.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import competitorRoutes from "./routes/competitors.js";
-
-
+import scenarioRoutes from "./routes/scenarioRoutes.js";
 import forecastRoutes from "./routes/forecast.js";
 
 // Import all models to ensure they are synced
@@ -17,6 +16,8 @@ import Product from "./models/Product.js";
 import DemandData from "./models/DemandData.js";
 import DemandForecast from "./models/DemandForecast.js";
 import { CompetitorPrice, CompetitorPriceHistory } from "./models/CompetitorPrice.js";
+import Scenario from "./models/Scenario.js";
+
 
 
 
@@ -39,6 +40,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/scenarios", scenarioRoutes);
 app.use("/api/import", importRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/forecast", forecastRoutes);

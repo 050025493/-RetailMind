@@ -1,10 +1,11 @@
-
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import dotenv from 'dotenv';
+// backend/src/services/geminiCompetitorService.js
+import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// ✅ Initialize Gemini client
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Generate realistic competitor pricing using Gemini AI
@@ -14,7 +15,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 export const generateCompetitorPrices = async (product, existingCompetitors = []) => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // ✅ Use the current stable model
+    const model = "models/gemini-2.5-flash";
 
     const prompt = `
 You are a market pricing analyst. Generate realistic competitor pricing data for the following product:
@@ -22,11 +24,11 @@ You are a market pricing analyst. Generate realistic competitor pricing data for
 Product Name: ${product.name}
 Current Price: ₹${product.currentPrice}
 Category: ${product.category}
-Cost Price: ₹${product.costPrice || 'Unknown'}
+Cost Price: ₹${product.costPrice || "Unknown"}
 
 ${existingCompetitors.length > 0 ? `
 Previous Competitor Prices:
-${existingCompetitors.map(c => `- ${c.competitorName}: ₹${c.price}`).join('\n')}
+${existingCompetitors.map(c => `- ${c.competitorName}: ₹${c.price}`).join("\n")}
 
 Update these prices realistically considering market dynamics. Prices should change by -5% to +8% based on:
 - Demand fluctuations
@@ -67,29 +69,26 @@ Rules:
 - Include brief reasoning for each price
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
+    // ✅ New SDK method
+    const result = await genAI.models.generateContent({
+      model,
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
 
-    // Clean up response - remove markdown code blocks if present
-    text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-
+    const text = result.response.text().replace(/```json|```/g, "").trim();
     const competitors = JSON.parse(text);
 
-    // Validate and normalize data
     if (!Array.isArray(competitors)) {
-      throw new Error('Invalid response format from Gemini');
+      throw new Error("Invalid response format from Gemini");
     }
 
     return competitors.map(c => ({
-      competitorName: c.competitorName || c.competitor_name || 'Unknown',
+      competitorName: c.competitorName || c.competitor_name || "Unknown",
       price: parseFloat(c.price) || 0,
-      reasoning: c.reasoning || 'Market-based pricing'
+      reasoning: c.reasoning || "Market-based pricing",
     }));
-
   } catch (error) {
-    console.error('Gemini AI error:', error);
-    // Fallback to rule-based generation
+    console.error("Gemini AI error:", error.message);
     return generateFallbackPrices(product, existingCompetitors);
   }
 };
@@ -99,29 +98,27 @@ Rules:
  */
 const generateFallbackPrices = (product, existingCompetitors) => {
   const basePrice = parseFloat(product.currentPrice);
-  const competitors = ['Amazon India', 'Flipkart', 'Croma', 'Reliance Digital'];
+  const competitors = ["Amazon India", "Flipkart", "Croma", "Reliance Digital"];
 
   if (existingCompetitors.length > 0) {
-    // Update existing prices with small changes
     return existingCompetitors.map(c => {
-      const change = (Math.random() - 0.5) * 0.1; // -5% to +5%
+      const change = (Math.random() - 0.5) * 0.1;
       const newPrice = Math.round(parseFloat(c.price) * (1 + change));
       return {
         competitorName: c.competitorName,
         price: newPrice,
-        reasoning: 'Market adjustment'
+        reasoning: "Market adjustment",
       };
     });
   }
 
-  // Generate new prices
-  return competitors.map((name, idx) => {
-    const variance = 0.85 + (Math.random() * 0.2); // 85% to 105% of base price
+  return competitors.map(name => {
+    const variance = 0.85 + Math.random() * 0.2;
     const price = Math.round(basePrice * variance);
     return {
       competitorName: name,
-      price: price,
-      reasoning: 'Competitive market positioning'
+      price,
+      reasoning: "Competitive market positioning",
     };
   });
 };
@@ -131,24 +128,23 @@ const generateFallbackPrices = (product, existingCompetitors) => {
  */
 export const generateCompetitorAnalysis = async (product, competitors, priceHistory) => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
+    const model = "models/gemini-2.5-pro";
     const prompt = `
 Analyze the competitive pricing landscape for:
 
 Product: ${product.name}
 Your Current Price: ₹${product.currentPrice}
-Cost Price: ₹${product.costPrice || 'Unknown'}
+Cost Price: ₹${product.costPrice || "Unknown"}
 
 Current Competitor Prices:
-${competitors.map(c => `- ${c.competitorName}: ₹${c.price}`).join('\n')}
+${competitors.map(c => `- ${c.competitorName}: ₹${c.price}`).join("\n")}
 
 ${priceHistory.length > 0 ? `
 Recent Price History (last 7 days):
-${priceHistory.slice(0, 7).map(h => 
-  `${h.competitorName}: ₹${h.price} (${h.changePercentage > 0 ? '+' : ''}${h.changePercentage}%)`
-).join('\n')}
-` : ''}
+${priceHistory.slice(0, 7).map(h =>
+  `${h.competitorName}: ₹${h.price} (${h.changePercentage > 0 ? "+" : ""}${h.changePercentage}%)`
+).join("\n")}
+` : ""}
 
 Provide a comprehensive analysis in JSON format:
 {
@@ -177,16 +173,15 @@ Provide a comprehensive analysis in JSON format:
 Return ONLY valid JSON, no markdown.
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
+    const result = await genAI.models.generateContent({
+      model,
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
 
-    text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-
+    const text = result.response.text().replace(/```json|```/g, "").trim();
     return JSON.parse(text);
-
   } catch (error) {
-    console.error('Analysis generation error:', error);
+    console.error("Analysis generation error:", error.message);
     return generateFallbackAnalysis(product, competitors);
   }
 };
@@ -196,31 +191,33 @@ const generateFallbackAnalysis = (product, competitors) => {
   const yourPrice = parseFloat(product.currentPrice);
   const diff = ((yourPrice - avgCompPrice) / avgCompPrice) * 100;
 
-  let position = 'competitive';
-  let action = 'maintain';
-  
+  let position = "competitive";
+  let action = "maintain";
+
   if (diff > 10) {
-    position = 'overpriced';
-    action = 'decrease';
+    position = "overpriced";
+    action = "decrease";
   } else if (diff < -10) {
-    position = 'underpriced';
-    action = 'increase';
+    position = "underpriced";
+    action = "increase";
   }
 
   return {
-    summary: `Your price is ${diff > 0 ? 'above' : 'below'} market average by ${Math.abs(diff).toFixed(1)}%`,
+    summary: `Your price is ${diff > 0 ? "above" : "below"} market average by ${Math.abs(diff).toFixed(1)}%`,
     position,
-    recommendations: [{
-      action,
-      suggestedPrice: Math.round(avgCompPrice),
-      reasoning: 'Align with market average',
-      expectedImpact: 'Improved competitiveness'
-    }],
-    marketInsights: [
-      'Market is moderately competitive',
-      'Price variations suggest active competition'
+    recommendations: [
+      {
+        action,
+        suggestedPrice: Math.round(avgCompPrice),
+        reasoning: "Align with market average",
+        expectedImpact: "Improved competitiveness",
+      },
     ],
-    risks: ['Competitor price changes', 'Demand fluctuations'],
-    opportunities: ['Market share growth', 'Brand positioning']
+    marketInsights: [
+      "Market is moderately competitive",
+      "Price variations suggest active competition",
+    ],
+    risks: ["Competitor price changes", "Demand fluctuations"],
+    opportunities: ["Market share growth", "Brand positioning"],
   };
 };

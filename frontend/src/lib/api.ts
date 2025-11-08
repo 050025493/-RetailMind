@@ -133,3 +133,42 @@ export const dashboardAPI = {
     return res.json();
   },
 };
+// --- Scenarios API ---
+export const scenariosAPI = {
+  // 🧠 Fetch all saved scenarios
+  getAll: async () => {
+    const res = await fetch(`${API_URL}/scenarios`, {
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+
+  // 🪄 Create a new scenario (Gemini AI prompt backend)
+  create: async (scenarioData: {
+    name: string;
+    timePeriod: number;
+    priceChange: number;
+    demandLift: number;
+    competitionFactor: string;
+    includeStock: boolean;
+    includeSeasonal: boolean;
+    includeBundle: boolean;
+    includeLoyalty: boolean;
+  }) => {
+    const res = await fetch(`${API_URL}/scenarios`, {
+      method: "POST",
+      headers: getAuthHeader(),
+      body: JSON.stringify(scenarioData),
+    });
+    return res.json();
+  },
+
+  // ❌ Delete a scenario
+  delete: async (id: number) => {
+    const res = await fetch(`${API_URL}/scenarios/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+};
