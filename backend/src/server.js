@@ -6,15 +6,20 @@ import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
 import importRoutes from "./routes/import.js";
 import dashboardRoutes from "./routes/dashboard.js";
+import competitorRoutes from "./routes/competitors.js";
 
+
+import forecastRoutes from "./routes/forecast.js";
 
 // Import all models to ensure they are synced
 import User from "./models/User.js";
 import Product from "./models/Product.js";
-
 import DemandData from "./models/DemandData.js";
 import DemandForecast from "./models/DemandForecast.js";
-import forecastRoutes from "./routes/forecast.js";
+import { CompetitorPrice, CompetitorPriceHistory } from "./models/CompetitorPrice.js";
+
+
+
 
 dotenv.config();
 const app = express();
@@ -26,15 +31,25 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// ===== SET UP MODEL ASSOCIATIONS =====
+// Product has many CompetitorPrices
+
+// ===== END ASSOCIATIONS =====
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/import", importRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/forecast", forecastRoutes);
+app.use("/api/competitors", competitorRoutes);
+
 
 // Sync Database
-sequelize.sync({ alter: true }).then(() => console.log("📦 Database synced"));
+sequelize.sync({ alter: true }).then(() => {
+  console.log("📦 Database synced");
+ 
+});
 
 app.get("/", (req, res) => res.send("Backend running ✅"));
 
