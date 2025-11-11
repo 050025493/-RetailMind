@@ -90,7 +90,7 @@
   /* Enhanced card styles */
   .card-enhanced {
     @apply rounded-xl bg-gradient-to-br from-card to-card/95 backdrop-blur-sm;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    box-shadow: 0 1px 3px 0 rgba(22, 22, 22, 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   

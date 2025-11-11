@@ -1,11 +1,11 @@
 // backend/src/services/geminiCompetitorService.js
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 // ✅ Initialize Gemini client
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Generate realistic competitor pricing using Gemini AI
@@ -16,7 +16,7 @@ const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export const generateCompetitorPrices = async (product, existingCompetitors = []) => {
   try {
     // ✅ Use the current stable model
-    const model = "models/gemini-2.5-flash";
+    const model = "gemini-2.5-pro";
 
     const prompt = `
 You are a market pricing analyst. Generate realistic competitor pricing data for the following product:
@@ -128,7 +128,7 @@ const generateFallbackPrices = (product, existingCompetitors) => {
  */
 export const generateCompetitorAnalysis = async (product, competitors, priceHistory) => {
   try {
-    const model = "models/gemini-2.5-pro";
+    const model = "gemini-2.5-flash";
     const prompt = `
 Analyze the competitive pricing landscape for:
 

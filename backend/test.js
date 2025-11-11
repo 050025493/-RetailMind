@@ -1,23 +1,17 @@
-// test.js
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
+
 dotenv.config();
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
-async function listModels() {
-  try {
-    console.log("\n✅ Available models for your API key:");
-    const pager = await ai.models.list();
-
-    // ✅ Each `page` is actually a single model in Pager
-    for await (const model of pager) {
-      console.log(`- ${model.name} (${model.displayName || "Unnamed"})`);
-    }
-
-  } catch (err) {
-    console.error("❌ Error:", err.message);
-  }
+try {
+  console.log("Testing Gemini API...");
+  const result = await model.generateContent("Say hello");
+  const response = await result.response;
+  console.log("Success:", response.text());
+} catch (error) {
+  console.error("Error:", error.message);
+  console.error("Cause:", error.cause);
 }
-
-listModels();
