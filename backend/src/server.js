@@ -11,6 +11,7 @@ import scenarioRoutes from "./routes/scenarioRoutes.js";
 import forecastRoutes from "./routes/forecast.js";
 import pricingroutes from "./routes/pricingRules.js"; 
 import pricingRoutes from './routes/pricing.js';
+import promoRoutes from './routes/promo.js';
 
 
 
@@ -24,6 +25,7 @@ import { CompetitorPrice, CompetitorPriceHistory } from "./models/CompetitorPric
 import Scenario from "./models/Scenario.js";
 import PricingRule from "./models/PricingRule.js";
 import PricingSuggestion from "./models/PricingSuggestion.js";
+import { ProductReview, PromoCampaign, PromoSimulation } from "./models/PromoSimulator.js";
 
 
 
@@ -54,6 +56,7 @@ app.use("/api/forecast", forecastRoutes);
 app.use("/api/competitors", competitorRoutes);
 app.use("/api/pricing-rules", pricingroutes);
 app.use('/api/pricing', pricingRoutes);
+app.use("/api/promo", promoRoutes);
 
 
 
@@ -69,3 +72,6 @@ app.get("/", (req, res) => res.send("Backend running ✅"));
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+await ProductReview.sync();
+await PromoCampaign.sync();
+await PromoSimulation.sync();

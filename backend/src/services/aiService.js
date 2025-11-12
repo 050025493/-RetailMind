@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const AI_API_URL = 'http://localhost:5001'; // Make sure this is port 5001
+const AI_API_URL = 'http://localhost:5001'; 
 
 /**
  * @desc Tell the AI server to train and save a new model

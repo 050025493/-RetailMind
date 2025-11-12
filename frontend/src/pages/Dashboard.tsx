@@ -218,10 +218,10 @@ export default function Dashboard() {
           )}
           {isExporting ? "Exporting..." : "Export Report"}
         </Button>
-        {/* --- END OF MODIFICATION --- */}
+        
       </div>
 
-      {/* --- MODIFIED: Added ref here, but it's not used by this function --- */}
+      
       {/* We are grabbing refs from the charts directly, so this dashboardContentRef is not needed for the data report */}
       <div ref={dashboardContentRef} className="space-y-6">
         {/* Stats Cards */}
@@ -255,7 +255,7 @@ export default function Dashboard() {
 
         {/* Revenue Trend & Category Sales */}
         <div className="grid gap-4 md:grid-cols-2">
-          {/* --- MODIFIED: Added ref to this Card --- */}
+          
           <Card ref={revenueChartRef}>
             <CardHeader>
               <CardTitle>Revenue Trend (Last 6 Months)</CardTitle>
@@ -273,9 +273,9 @@ export default function Dashboard() {
                     <Line
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#2563eb"
-                      strokeWidth={2}
-                      dot={false}
+                      stroke="#2345eb"
+                      strokeWidth={3}
+                      dot={true}
                     />
                   </LineChart>
                 </ResponsiveContainer>

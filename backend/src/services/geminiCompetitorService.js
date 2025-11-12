@@ -15,7 +15,7 @@ const genAI = new GoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
  */
 export const generateCompetitorPrices = async (product, existingCompetitors = []) => {
   try {
-    // ✅ Use the current stable model
+    
     const model = "gemini-2.5-flash";
 
     const prompt = `

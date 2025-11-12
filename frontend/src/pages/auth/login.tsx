@@ -44,14 +44,16 @@ export default function Login() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400">
+    <div className="flex h-screen w-full bg-gradient-to-br from-purple-600 via-pink-500">
       {/* Left Section */}
       <div className="hidden md:flex w-1/2 flex-col justify-center px-12 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-purple-800/70 to-pink-600/70 mix-blend-overlay" />
+        <div className="absolute inset-0bg-gradient-to-br from-purple-600 via-pink-500 " />
         <div className="relative z-10 space-y-6">
+          <span className="text-sm uppercase tracking-widest">Welcome to</span>
           <h1 className="text-5xl font-extrabold tracking-tight leading-tight drop-shadow-lg">
             RetailMind
           </h1>
+          
           <p className="max-w-md text-lg opacity-90">
             Optimize prices, forecast demand, and stay ahead of competitors using real-time
             intelligence and machine learning models.
