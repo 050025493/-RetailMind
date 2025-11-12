@@ -1,5 +1,6 @@
--- backend/database/competitor_prices_schema.sql
--- Run this SQL to create the competitor_prices table
+-- Competitor Prices Schema
+
+-- Table to store current competitor prices
 
 CREATE TABLE IF NOT EXISTS competitor_prices (
   id SERIAL PRIMARY KEY,
@@ -12,7 +13,7 @@ CREATE TABLE IF NOT EXISTS competitor_prices (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(product_id, competitor_name)
 );
-
+-- Table to store historical competitor prices
 CREATE TABLE IF NOT EXISTS competitor_price_history (
   id SERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,

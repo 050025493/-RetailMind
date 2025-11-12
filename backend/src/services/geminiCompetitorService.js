@@ -16,7 +16,7 @@ const genAI = new GoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
 export const generateCompetitorPrices = async (product, existingCompetitors = []) => {
   try {
     // ✅ Use the current stable model
-    const model = "gemini-2.5-pro";
+    const model = "gemini-2.5-flash";
 
     const prompt = `
 You are a market pricing analyst. Generate realistic competitor pricing data for the following product:
@@ -221,3 +221,4 @@ const generateFallbackAnalysis = (product, competitors) => {
     opportunities: ["Market share growth", "Brand positioning"],
   };
 };
+

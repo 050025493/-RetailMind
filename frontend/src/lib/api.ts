@@ -172,3 +172,60 @@ export const scenariosAPI = {
     return res.json();
   },
 };
+
+// Pricing API
+export const pricingAPI = {
+  // Get all pricing suggestions
+  getSuggestions: async (search?: string) => {
+    const params = search ? `?search=${encodeURIComponent(search)}` : '';
+    const res = await fetch(`${API_URL}/pricing/suggestions${params}`, {
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+
+  // Get single product pricing suggestion with details
+  getProductPricing: async (productId: number) => {
+    const res = await fetch(`${API_URL}/pricing/product/${productId}`, {
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+
+  // Apply a pricing suggestion
+  applyPricing: async (productId: number, acceptedPrice: number) => {
+    const res = await fetch(`${API_URL}/pricing/product/${productId}/apply`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify({ accepted_price: acceptedPrice }),
+    });
+    return res.json();
+  },
+
+  // Dismiss a pricing suggestion
+  dismissPricing: async (productId: number) => {
+    const res = await fetch(`${API_URL}/pricing/product/${productId}/dismiss`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+
+  // Apply all pending suggestions
+  applyAllSuggestions: async () => {
+    const res = await fetch(`${API_URL}/pricing/apply-all`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+
+  // Retrain the ML model
+  retrainModel: async () => {
+    const res = await fetch(`${API_URL}/pricing/retrain`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    return res.json();
+  },
+};
