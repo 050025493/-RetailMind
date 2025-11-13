@@ -41,8 +41,8 @@ const buildPrompt = (payload) => {
     priceChange,
     demandLift,
     competitionFactor,
-    parameters, // Your extra parameters
-    baseAssumptions, // Our new field
+    parameters, // extra parameters
+    baseAssumptions, //  new field
   } = payload;
 
   // --- NEW: Define default assumptions if not provided ---
@@ -108,7 +108,7 @@ REPLACE the placeholder descriptions with your calculated values.
 CRITICAL: Output ONLY the JSON object. Start with { and end with }. No other text.`;
 };
 
-// ✅ Create Scenario
+//  Create Scenario
 export const createScenario = async (req, res) => {
   try {
     const { name, timePeriod, priceChange, demandLift, competitionFactor, parameters, baseAssumptions } = req.body;
@@ -136,7 +136,7 @@ export const createScenario = async (req, res) => {
       return await model.generateContent(prompt);
     });
 
-    // ✅ Extract raw text safely from Gemini response
+    //  Extract raw text safely from Gemini response
     const response = await result.response;
     let aiText = response.text();
 
@@ -146,13 +146,13 @@ export const createScenario = async (req, res) => {
       throw new Error("Gemini returned empty response");
     }
 
-    // ✅ Clean up any Markdown or extra formatting
+    //  Clean up any Markdown or extra formatting
     aiText = aiText
       .replace(/```json\s*/gi, "")
       .replace(/```\s*/g, "")
       .trim();
 
-    // ✅ Try parsing JSON, fallback to text extraction
+    //  Try parsing JSON, fallback to text extraction
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(aiText);
@@ -171,16 +171,16 @@ export const createScenario = async (req, res) => {
       }
     }
 
-    // ✅ Validate response structure
+    //  Validate response structure
     if (!parsedResponse.analysis || !parsedResponse.report) {
       throw new Error("Gemini response missing required fields (analysis or report)");
     }
 
-    // ✅ Extract parts safely
+    //  Extract parts safely
     const analysis = parsedResponse.analysis || {};
     const report = parsedResponse.report || {};
 
-    // ✅ Create formatted Markdown report
+    //  Create formatted Markdown report
     const reportText = `
 ### Executive Summary
 ${report.executiveSummary || "N/A"}
@@ -214,7 +214,7 @@ ${report.takeaway || "N/A"}
     const marketShare = analysis.marketShare ?? "N/A";
     const confidence = analysis.confidence ?? "Medium";
 
-    // ✅ Save scenario in database
+    //  Save scenario in database
     const scenario = await Scenario.create({
       name,
       timePeriod,
@@ -227,7 +227,7 @@ ${report.takeaway || "N/A"}
       marketShare,
     });
 
-    // ✅ Respond with structured data
+    //  Respond with structured data
     res.json({
       success: true,
       data: {
@@ -246,7 +246,7 @@ ${report.takeaway || "N/A"}
   }
 };
 
-// ✅ Get all scenarios
+//  Get all scenarios
 export const getScenarios = async (req, res) => {
   try {
     const scenarios = await Scenario.findAll({ order: [["created_at", "DESC"]] });
@@ -261,7 +261,7 @@ export const getScenarios = async (req, res) => {
   }
 };
 
-// ✅ Delete scenario
+//  Delete scenario
 export const deleteScenario = async (req, res) => {
   try {
     const { id } = req.params;

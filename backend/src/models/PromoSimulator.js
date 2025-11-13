@@ -1,4 +1,4 @@
-//promoSimulator
+// backend/src/models/PromoSimulator.js
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 import User from "./User.js";
@@ -250,4 +250,4 @@ PromoSimulation.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Product.hasMany(PromoSimulation, { foreignKey: 'productId', as: 'simulations' });
 PromoSimulation.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 
-export  { ProductReview, PromoCampaign, PromoSimulation };
+export { ProductReview, PromoCampaign, PromoSimulation };

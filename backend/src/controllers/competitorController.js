@@ -32,16 +32,19 @@ export const getCompetitorPrices = async (req, res) => {
       where: { productId },
       order: [['price', 'ASC']]
     });
-
-    // Calculate status
+    //  UPDATED: Calculate status with consistent 15% threshold (according to indian standard +-15)
     let status = 'competitive';
     if (competitors.length > 0) {
       const avgPrice = competitors.reduce((sum, c) => sum + parseFloat(c.price), 0) / competitors.length;
       const yourPrice = parseFloat(product.currentPrice);
       const diff = ((yourPrice - avgPrice) / avgPrice) * 100;
 
-      if (diff > 10) status = 'overpriced';
-      else if (diff < -10) status = 'underpriced';
+      //  Changed to 15% threshold for consistency
+      if (diff > 15) status = 'overpriced';
+      else if (diff < -15) status = 'underpriced';
+      else status = 'competitive';
+      
+      console.log(`[Status Check] ${product.name}: Your ₹${yourPrice} vs Avg ₹${avgPrice.toFixed(2)} = ${diff.toFixed(1)}% → ${status.toUpperCase()}`);
     }
 
     res.status(200).json({
@@ -117,6 +120,8 @@ export const refreshCompetitorPrices = async (req, res) => {
       raw: true
     });
 
+    console.log(`[Refresh] Generating new prices for ${product.name}...`);
+
     // Generate new prices using Gemini AI
     const newCompetitorData = await generateCompetitorPrices(product, existingCompetitors);
 
@@ -179,6 +184,8 @@ export const refreshCompetitorPrices = async (req, res) => {
     }, { transaction: t });
 
     await t.commit();
+
+    console.log(`[Refresh] Successfully updated ${newCompetitorData.length} competitors for ${product.name}`);
 
     // Fetch updated data
     const updatedCompetitors = await CompetitorPrice.findAll({
@@ -246,6 +253,8 @@ export const getDetailedAnalysis = async (req, res) => {
       order: [['recordedAt', 'DESC']],
       limit: 100
     });
+
+    console.log(`[Analysis] Generating AI analysis for ${product.name} with ${competitors.length} competitors`);
 
     // Generate AI analysis
     const analysis = await generateCompetitorAnalysis(
@@ -327,8 +336,9 @@ export const getAllCompetitorStatus = async (req, res) => {
         const yourPrice = parseFloat(product.currentPrice);
         const diff = ((yourPrice - avgCompPrice) / avgCompPrice) * 100;
 
-        if (diff > 10) status = 'overpriced';
-        else if (diff < -10) status = 'underpriced';
+        //  Updated to 15% threshold for consistency
+        if (diff > 15) status = 'overpriced';
+        else if (diff < -15) status = 'underpriced';
         else status = 'competitive';
       }
 

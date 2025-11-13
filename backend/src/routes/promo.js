@@ -7,9 +7,7 @@ import {
   getCampaigns,
   addReview,
   createDemoReviews,
-  getSimulations,
-  saveSimulation,
-  exportSimulationPDF
+  getSimulations
 } from '../controllers/promoController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -21,8 +19,6 @@ router.use(protect);
 // Simulation
 router.post('/simulate', simulatePromo);
 router.get('/simulations', getSimulations);
-router.post('/save-simulation', saveSimulation);
-router.get('/export-pdf/:simulationId', exportSimulationPDF);
 
 // Sentiment analysis
 router.get('/sentiment/:productId', getProductSentimentData);

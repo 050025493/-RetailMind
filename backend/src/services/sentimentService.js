@@ -1,4 +1,4 @@
-
+// backend/src/services/sentimentService.js
 import axios from 'axios';
 import { ProductReview } from '../models/PromoSimulator.js';
 import DemandData from '../models/DemandData.js';
@@ -88,7 +88,7 @@ const fallbackSentiment = (text) => {
   score = Math.max(-1, Math.min(1, score));
   
   return {
-    label: score > 0.4 ? 'positive' : score < -0.2 ? 'negative' : 'neutral',
+    label: score > 0.2 ? 'positive' : score < -0.2 ? 'negative' : 'neutral',
     score: score,
     confidence: 0.6
   };
@@ -104,7 +104,7 @@ export const getProductSentiment = async (productId) => {
     const reviews = await ProductReview.findAll({
       where: { productId },
       attributes: ['sentimentScore', 'sentimentLabel', 'rating', 'createdAt'],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
       limit: 100
     });
 
@@ -257,12 +257,12 @@ export const generateDemoReviews = async (productId, count = 10) => {
     { text: "Great product! Highly recommended. Quality is excellent.", rating: 5 },
     { text: "Good value for money. Works as expected.", rating: 4 },
     { text: "Average product. Nothing special but does the job.", rating: 3 },
-    { text: "Not satisfied. Quality could be better.", rating: 0 },
+    { text: "Not satisfied. Quality could be better.", rating: 2 },
     { text: "Excellent! Exceeded my expectations. Love it!", rating: 5 },
     { text: "Pretty good. Would buy again.", rating: 4 },
     { text: "Decent product for the price point.", rating: 3 },
     { text: "Amazing quality! Best purchase this year.", rating: 5 },
-    { text: "Okay product. Has some issues but usable.", rating: 2 },
+    { text: "Okay product. Has some issues but usable.", rating: 3 },
     { text: "Very happy with this purchase. Great quality!", rating: 5 }
   ];
 

@@ -89,7 +89,9 @@ export const generateForecast = async (req, res) => {
   }
 };
 
-// ... (Your getForecast function remains unchanged) ...
+// @desc    Get demand forecast for a product
+// @route   GET /api/forecast/:productId
+// @access  Private
 export const getForecast = async (req, res) => {
   try {
     const { productId } = req.params;
