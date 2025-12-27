@@ -4,3 +4,5 @@ numpy
 joblib
 scikit-learn
 xgboost
+scikit-optimize
+scipy

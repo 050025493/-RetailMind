@@ -63,17 +63,26 @@ app.use("/api/sales-data", salesDataRoutes);
 
 
 
-
 // Sync Database
-sequelize.sync({ alter: true }).then(() => {
-  console.log("📦 Database synced");
+sequelize.sync({ alter: true })
+  .then(async () => {
+    console.log("📦 Database synced");
 
-});
+    // Additional syncs if necessary (though sequelize.sync should cover imported models)
+    try {
+      await ProductReview.sync();
+      await PromoCampaign.sync();
+      await PromoSimulation.sync();
+      console.log("📦 Promo models synced");
+    } catch (error) {
+      console.error("⚠️ Error syncing promo models:", error);
+    }
+
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("❌ Database sync failed:", err);
+  });
 
 app.get("/", (req, res) => res.send("Backend running ✅"));
-
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-await ProductReview.sync();
-await PromoCampaign.sync();
-await PromoSimulation.sync();

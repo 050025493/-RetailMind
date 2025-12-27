@@ -24,6 +24,7 @@ interface Product {
   costPrice: number;
   stockQuantity: number;
   status: string;
+  imageUrl?: string;
 }
 
 const API_URL = 'http://localhost:4000/api';

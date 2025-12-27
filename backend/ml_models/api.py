@@ -61,7 +61,7 @@ def train_recursive_model(df):
     X = df[features]
     y = df["quantity_sold_deviation"] # Target is a single value
 
-    # Using RandomizedSearch to find a good simple model
+    # Using RandomizedSearch to find a good model (restored for accuracy)
     param_dist = {
         "n_estimators": [300, 500, 800],
         "max_depth": [4, 6, 8],
@@ -79,7 +79,7 @@ def forecast_recursive(df, model, days_to_forecast):
     """
     (v4 Logic) Predicts 30 days ahead using a recursive loop.
     """
-    print("--- Running Model A (Recursive Sprinter) ---")
+    # print("--- Running Model A (Recursive Sprinter) ---") # Reduce log noise
     historical_df_processed = create_features(df.copy())
     seasonal_anchors = historical_df_processed.groupby("day_of_week")["seasonal_avg"].first().to_dict()
     global_mean_anchor = historical_df_processed["seasonal_avg"].mean() 
@@ -141,7 +141,7 @@ def train_direct_model(df, forecast_horizon):
     """
     (v5 Logic) Trains a MultiOutput model to predict all 30 days at once.
     """
-    print(f"--- Training Model B (Direct Marathoner) for {forecast_horizon} days ---")
+    print(f"--- Training Model B for {forecast_horizon} days ---")
     features = [
         col for col in df.columns if col not in [
             "date", "quantity_sold", "seasonal_avg", "quantity_sold_deviation"
@@ -159,9 +159,7 @@ def train_direct_model(df, forecast_horizon):
     X = pd.DataFrame(X_list)
     y = np.array(y_list)
     
-    print(f"Direct training data shape: X={X.shape}, y={y.shape}")
-
-    # A strong base model
+    # A strong base model (restored for accuracy)
     base_model = XGBRegressor(
         objective="reg:squarederror", 
         random_state=42, n_estimators=500, learning_rate=0.05,
@@ -171,7 +169,7 @@ def train_direct_model(df, forecast_horizon):
     # The wrapper that trains 30 models
     wrapper = MultiOutputRegressor(base_model, n_jobs=-1)
     
-    print("Fitting MultiOutput Regressor... (This may take a minute)")
+    print("Fitting MultiOutput Regressor...")
     wrapper.fit(X, y) 
     return wrapper
 
@@ -321,4 +319,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(host='0.0.0.0', debug=True, port=5001)
