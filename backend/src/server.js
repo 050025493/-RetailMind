@@ -12,6 +12,7 @@ import forecastRoutes from "./routes/forecast.js";
 import pricingroutes from "./routes/pricingRules.js"; 
 import pricingRoutes from './routes/pricing.js';
 import promoRoutes from './routes/promo.js';
+import salesDataRoutes from "./routes/salesData.js";
 
 
 
@@ -57,6 +58,7 @@ app.use("/api/competitors", competitorRoutes);
 app.use("/api/pricing-rules", pricingroutes);
 app.use('/api/pricing', pricingRoutes);
 app.use("/api/promo", promoRoutes);
+app.use("/api/sales-data", salesDataRoutes);
 
 
 

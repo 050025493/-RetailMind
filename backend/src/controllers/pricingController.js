@@ -6,7 +6,7 @@ import Product from '../models/Product.js';
 import PricingSuggestion from '../models/PricingSuggestion.js';
 import { CompetitorPrice as Competitor } from '../models/CompetitorPrice.js';
 // ❗ FIX: Import DemandData instead of DemandForecast
-import DemandData from '../models/DemandData.js'; 
+import DemandData from '../models/DemandData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,47 +81,47 @@ function safeParseInt(value, defaultValue = 0) {
 export const getPricingSuggestions = async (req, res) => {
   try {
     const { search } = req.query;
-    
+
     // Get products with their related data
     let products = await Product.findAll({
       // where: search ? { name: { [Op.like]: `%${search}%` } } : {},
       include: [
         // ❗ FIX: Use DemandData model with 'demand' alias
         // We also order by date and limit to 30 to get recent history
-        { 
-          model: DemandData, 
+        {
+          model: DemandData,
           as: 'demand',
           order: [['date', 'DESC']],
-          limit: 30 
+          limit: 30
         },
         { model: PricingSuggestion, as: 'pricingSuggestion' }
       ],
       order: [['created_at', 'DESC']]
     });
-    
+
     // Get all competitor data
     const competitors = await Competitor.findAll();
-    
+
     // Prepare data for ML model
     const suggestions = [];
-    
+
     for (const product of products) {
       // Get competitor prices for this product
       const productCompetitors = competitors.filter(c => c.productId === product.id);
       const competitorPrices = productCompetitors
         .map(c => safeParseFloat(c.price))
         .filter(p => p > 0);
-      
+
       // Safely parse all values (using correct model properties)
       const currentPrice = safeParseFloat(product.currentPrice, 100);
       const costPrice = safeParseFloat(product.costPrice, currentPrice * 0.6);
-      
+
       // ❗ FIX: Get forecast from the most recent 'demand' entry
       const demandForecast = safeParseFloat(
         product.demand?.[0]?.quantity_sold, // Use quantity_sold from first item
         100
       );
-      
+
       // Prepare product data for ML model
       const productData = {
         id: product.id,
@@ -139,11 +139,39 @@ export const getPricingSuggestions = async (req, res) => {
           ? product.demand.map(d => d.quantity_sold).reverse()
           : [100]
       };
-      
+
+      // CHECK CACHE FIRST
+      // If we have a suggestion less than 24 hours old, use it
+      const hasRecentSuggestion = product.pricingSuggestion &&
+        (new Date() - new Date(product.pricingSuggestion.updated_at) < 24 * 60 * 60 * 1000) &&
+        product.pricingSuggestion.status !== 'dismissed';
+
+      if (hasRecentSuggestion) {
+        suggestions.push({
+          product: {
+            id: product.id,
+            name: product.name,
+            category: product.category,
+            image: product.imageUrl
+          },
+          current_price: productData.current_price,
+          suggested_price: safeParseFloat(product.pricingSuggestion.suggested_price),
+          confidence: safeParseFloat(product.pricingSuggestion.confidence),
+          change_percentage: safeParseFloat(product.pricingSuggestion.change_percentage),
+          price_range: {
+            min: safeParseFloat(product.pricingSuggestion.min_price),
+            max: safeParseFloat(product.pricingSuggestion.max_price)
+          },
+          reasoning: JSON.parse(product.pricingSuggestion.reasoning || '{}'),
+          impact: JSON.parse(product.pricingSuggestion.impact || '{}')
+        });
+        continue; // Skip Python call
+      }
+
       try {
         // Call Python ML model for prediction
         const prediction = await callPythonModel('predict_price.py', productData);
-        
+
         // Store or update suggestion in database
         await PricingSuggestion.upsert({
           product_id: product.id,
@@ -157,7 +185,7 @@ export const getPricingSuggestions = async (req, res) => {
           change_percentage: prediction.change_percentage,
           status: product.pricingSuggestion?.status || 'pending'
         });
-        
+
         suggestions.push({
           product: {
             id: product.id,
@@ -168,10 +196,10 @@ export const getPricingSuggestions = async (req, res) => {
           current_price: productData.current_price,
           ...prediction
         });
-        
+
       } catch (mlError) {
         console.error(`ML prediction failed for ${product.name}:`, mlError.message);
-        
+
         // Use existing suggestion if available
         if (product.pricingSuggestion) {
           suggestions.push({
@@ -205,13 +233,13 @@ export const getPricingSuggestions = async (req, res) => {
         }
       }
     }
-    
+
     res.json({
       success: true,
       data: suggestions,
       total: suggestions.length
     });
-    
+
   } catch (err) {
     console.error('Get pricing suggestions error:', err);
     res.status(500).json({
@@ -226,39 +254,39 @@ export const getPricingSuggestions = async (req, res) => {
 export const getProductPricing = async (req, res) => {
   try {
     const { productId } = req.params;
-    
+
     const product = await Product.findByPk(productId, {
       include: [
         // ❗ FIX: Use DemandData model with 'demand' alias
-        { 
-          model: DemandData, 
+        {
+          model: DemandData,
           as: 'demand',
           order: [['date', 'DESC']],
-          limit: 30 
+          limit: 30
         },
         { model: PricingSuggestion, as: 'pricingSuggestion' }
       ]
     });
-    
+
     if (!product) {
       return res.status(404).json({
         success: false,
         message: 'Product not found'
       });
     }
-    
+
     // Get competitor prices
     const competitors = await Competitor.findAll({
       where: { productId: product.id }
     });
-    
+
     const competitorPrices = competitors
       .map(c => safeParseFloat(c.price))
       .filter(p => p > 0);
-    
+
     const currentPrice = safeParseFloat(product.currentPrice, 100);
     const costPrice = safeParseFloat(product.costPrice, currentPrice * 0.6);
-    
+
     const productData = {
       current_price: currentPrice,
       cost_price: costPrice,
@@ -274,10 +302,10 @@ export const getProductPricing = async (req, res) => {
         ? product.demand.map(d => d.quantity_sold).reverse()
         : [100]
     };
-    
+
     // Get ML prediction
     const prediction = await callPythonModel('predict_price.py', productData);
-    
+
     // Save suggestion
     await PricingSuggestion.upsert({
       product_id: product.id,
@@ -291,7 +319,7 @@ export const getProductPricing = async (req, res) => {
       change_percentage: prediction.change_percentage,
       status: 'pending'
     });
-    
+
     res.json({
       success: true,
       data: {
@@ -308,7 +336,7 @@ export const getProductPricing = async (req, res) => {
         }))
       }
     });
-    
+
   } catch (err) {
     console.error('Get product pricing error:', err);
     res.status(500).json({
@@ -324,34 +352,34 @@ export const applyPricingSuggestion = async (req, res) => {
   try {
     const { productId } = req.params;
     const { accepted_price } = req.body;
-    
+
     const product = await Product.findByPk(productId);
     const suggestion = await PricingSuggestion.findOne({
       where: { product_id: productId }
     });
-    
+
     if (!product || !suggestion) {
       return res.status(404).json({
         success: false,
         message: 'Product or suggestion not found'
       });
     }
-    
+
     const oldPrice = product.currentPrice;
     const newPrice = safeParseFloat(accepted_price);
-    
+
     // Update product price
     await product.update({ currentPrice: newPrice }); // Use correct property
-    
+
     // Update suggestion status
     await suggestion.update({
       status: 'applied',
       accepted_price: newPrice,
       applied_at: new Date()
     });
-    
+
     console.log(`✅ Price updated: ${product.name} from ₹${oldPrice} to ₹${newPrice}`);
-    
+
     res.json({
       success: true,
       message: 'Price updated successfully',
@@ -361,7 +389,7 @@ export const applyPricingSuggestion = async (req, res) => {
         new_price: newPrice
       }
     });
-    
+
   } catch (err) {
     console.error('Apply pricing error:', err);
     res.status(500).json({
@@ -377,17 +405,17 @@ export const dismissPricingSuggestion = async (req, res) => {
   // ... (This function remains the same)
   try {
     const { productId } = req.params;
-    
+
     await PricingSuggestion.update(
       { status: 'dismissed', dismissed_at: new Date() },
       { where: { product_id: productId } }
     );
-    
+
     res.json({
       success: true,
       message: 'Suggestion dismissed'
     });
-    
+
   } catch (err) {
     console.error('Dismiss pricing error:', err);
     res.status(500).json({
@@ -406,22 +434,22 @@ export const applyAllSuggestions = async (req, res) => {
       where: { status: 'pending' },
       include: [{ model: Product, as: 'product' }]
     });
-    
+
     let updated = 0;
     const results = [];
-    
+
     for (const suggestion of suggestions) {
       try {
         const oldPrice = suggestion.product.currentPrice; // Use correct property
         const newPrice = safeParseFloat(suggestion.suggested_price);
-        
+
         await suggestion.product.update({ currentPrice: newPrice }); // Use correct property
         await suggestion.update({
           status: 'applied',
           accepted_price: newPrice,
           applied_at: new Date()
         });
-        
+
         updated++;
         results.push({
           product_id: suggestion.product.id,
@@ -429,18 +457,18 @@ export const applyAllSuggestions = async (req, res) => {
           old_price: oldPrice,
           new_price: newPrice
         });
-        
+
       } catch (err) {
         console.error(`Failed to update ${suggestion.product.name}:`, err);
       }
     }
-    
+
     res.json({
       success: true,
       message: `Successfully updated ${updated} products`,
       data: results
     });
-    
+
   } catch (err) {
     console.error('Apply all suggestions error:', err);
     res.status(500).json({
@@ -458,12 +486,12 @@ export const retrainModel = async (req, res) => {
     const trainingData = await PricingSuggestion.findAll({
       where: { status: 'applied' },
       include: [
-        { 
-          model: Product, 
+        {
+          model: Product,
           as: 'product',
           // ❗ FIX: Use DemandData model with 'demand' alias
-          include: [{ 
-            model: DemandData, 
+          include: [{
+            model: DemandData,
             as: 'demand',
             order: [['date', 'DESC']],
             limit: 30
@@ -473,7 +501,7 @@ export const retrainModel = async (req, res) => {
       limit: 1000,
       order: [['applied_at', 'DESC']]
     });
-    
+
     // Format for ML model
     const formattedData = trainingData
       .map(s => {
@@ -482,7 +510,7 @@ export const retrainModel = async (req, res) => {
         // ❗ FIX: Get forecast from the most recent 'demand' entry
         const demandForecast = safeParseFloat(s.product.demand?.[0]?.quantity_sold, 100);
         const acceptedPrice = safeParseFloat(s.accepted_price);
-        
+
         return {
           current_price: currentPrice,
           cost_price: costPrice,
@@ -501,25 +529,25 @@ export const retrainModel = async (req, res) => {
         };
       })
       .filter(item => item.optimal_price > 0);
-    
+
     if (formattedData.length < 10) {
       return res.status(400).json({
         success: false,
         message: 'Insufficient training data. Need at least 10 applied suggestions.'
       });
     }
-    
+
     // Call Python training script
     const result = await callPythonModel('train_model.py', {
       training_data: formattedData
     });
-    
+
     res.json({
       success: true,
       message: 'Model retrained successfully',
       data: result
     });
-    
+
   } catch (err) {
     console.error('Retrain model error:', err);
     res.status(500).json({

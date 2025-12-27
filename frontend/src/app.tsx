@@ -10,7 +10,6 @@ import Dashboard from "@/pages/Dashboard";
 import Forecast from "@/pages/Forecast";
 import Pricing from "@/pages/Pricing";
 import Competitors from "@/pages/Competitors";
-import Promo from "@/pages/Promo";
 import Scenarios from "@/pages/Scenarios";
 import Rules from "@/pages/Rules";
 import Login from "@/pages/auth/Login";
@@ -19,6 +18,8 @@ import NotFound from "@/pages/NotFound";
 import Profile from "@/pages/Profile";
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
+
+import ProductsPage from "@/pages/Products";
 
 
 
@@ -69,8 +70,8 @@ function Router() {
       <Route path="/competitors">
         <ProtectedRoute component={Competitors} />
       </Route>
-      <Route path="/promo">
-        <ProtectedRoute component={Promo} />
+      <Route path="/products">
+        <ProtectedRoute component={ProductsPage} />
       </Route>
       <Route path="/scenarios">
         <ProtectedRoute component={Scenarios} />

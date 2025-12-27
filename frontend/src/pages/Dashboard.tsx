@@ -72,7 +72,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
-  
+
   // --- We will keep the "Detailed Report" function ---
   const handleExportDataReport = async () => {
     setIsExporting(true);
@@ -101,7 +101,7 @@ export default function Dashboard() {
         p.total_units_sold,
         `₹${parseFloat(p.total_revenue).toLocaleString("en-IN")}`
       ]);
-      
+
       autoTable(pdf, {
         head: [['Product Name', 'Units Sold', 'Total Revenue']],
         body: tableData,
@@ -126,7 +126,7 @@ export default function Dashboard() {
         const revenueCanvas = await html2canvas(revenueChartRef.current, { scale: 2 });
         const revenueImgData = revenueCanvas.toDataURL('image/png');
         revenueChartRef.current.style.backgroundColor = '';
-        pdf.addImage(revenueImgData, 'PNG', 10, 30, 190, 100); 
+        pdf.addImage(revenueImgData, 'PNG', 10, 30, 190, 100);
       }
 
       if (categoryChartRef.current) {
@@ -136,7 +136,7 @@ export default function Dashboard() {
         categoryChartRef.current.style.backgroundColor = '';
         pdf.addImage(categoryImgData, 'PNG', 10, 140, 190, 100);
       }
-      
+
       pdf.setFontSize(10);
       pdf.text('Page 2', 105, 287, { align: 'center' });
 
@@ -152,44 +152,43 @@ export default function Dashboard() {
   if (loading) {
     // ... (Loading UI) ...
     return (
-       <div className="flex items-center justify-center min-h-[60vh]">
-         <div className="text-center">
-           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-           <p className="text-muted-foreground">Loading dashboard...</p>
-         </div>
-       </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
     );
   }
 
   const statsCards = [
-    // ... (statsCards array) ...
     {
       title: "Total Revenue",
       value: `₹${Math.round(stats?.total_revenue || 0).toLocaleString("en-IN")}`,
-      change: "+12.3%",
+      change: null, // Removed hardcoded +12.3%
       icon: DollarSign,
-      trend: "up",
+      trend: "neutral",
     },
     {
       title: "Total Products",
       value: stats?.total_products || 0,
-      change: "+3",
+      change: null, // Removed hardcoded +3
       icon: Package,
-      trend: "up",
+      trend: "neutral",
     },
     {
       title: "Avg. Margin",
       value: `${stats?.avg_margin || 0}%`,
-      change: "+2.1%",
+      change: null, // Removed hardcoded +2.1%
       icon: TrendingUp,
-      trend: "up",
+      trend: "neutral",
     },
     {
       title: "Low Stock Items",
       value: stats?.low_stock_count || 0,
-      change: "Needs attention",
+      change: (stats?.low_stock_count || 0) > 0 ? "Needs attention" : "Stock Healthy",
       icon: AlertCircle,
-      trend: "neutral",
+      trend: (stats?.low_stock_count || 0) > 0 ? "down" : "up",
     },
   ];
 
@@ -205,9 +204,9 @@ export default function Dashboard() {
         </div>
 
         {/* --- MODIFIED: Reverted to a single Button --- */}
-        <Button 
-          variant="outline" 
-          className="gap-2" 
+        <Button
+          variant="outline"
+          className="gap-2"
           disabled={isExporting}
           onClick={handleExportDataReport} // <-- This now calls the data report function
         >
@@ -218,10 +217,10 @@ export default function Dashboard() {
           )}
           {isExporting ? "Exporting..." : "Export Report"}
         </Button>
-        
+
       </div>
 
-      
+
       {/* We are grabbing refs from the charts directly, so this dashboardContentRef is not needed for the data report */}
       <div ref={dashboardContentRef} className="space-y-6">
         {/* Stats Cards */}
@@ -238,13 +237,12 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
                 <p
-                  className={`text-xs ${
-                    stat.trend === "up"
+                  className={`text-xs ${stat.trend === "up"
                       ? "text-green-500"
                       : stat.trend === "neutral"
-                      ? "text-yellow-500"
-                      : "text-red-500"
-                  }`}
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }`}
                 >
                   {stat.change}
                 </p>
@@ -255,7 +253,7 @@ export default function Dashboard() {
 
         {/* Revenue Trend & Category Sales */}
         <div className="grid gap-4 md:grid-cols-2">
-          
+
           <Card ref={revenueChartRef}>
             <CardHeader>
               <CardTitle>Revenue Trend (Last 6 Months)</CardTitle>
@@ -362,11 +360,10 @@ export default function Dashboard() {
                   {alerts.map((a) => (
                     <div
                       key={a.id}
-                      className={`p-3 rounded-lg border ${
-                        a.severity === "high"
+                      className={`p-3 rounded-lg border ${a.severity === "high"
                           ? "border-red-500/40 bg-red-500/10 text-red-600"
                           : "border-blue-500/40 bg-blue-500/10 text-blue-600"
-                      }`}
+                        }`}
                     >
                       <div className="flex justify-between">
                         <p className="font-medium">{a.message}</p>

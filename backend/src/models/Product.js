@@ -70,10 +70,7 @@ const Product = sequelize.define("Product", {
   updatedAt: 'updated_at'
 });
 
-// Define relationship
 Product.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(Product, { foreignKey: 'userId', as: 'products' });
 
 export default Product;
-
-

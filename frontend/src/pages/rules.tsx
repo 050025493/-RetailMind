@@ -19,13 +19,76 @@ interface PricingRule {
   actionUnit: string;
 }
 
+interface PreviewItem {
+  id: number;
+  name: string;
+  currentPrice: number;
+  newPrice: number;
+  priceChange: number;
+  changePercentage: string;
+}
+
+const PreviewModal = ({ isOpen, onClose, data, totalProducts }: { isOpen: boolean; onClose: () => void; data: PreviewItem[]; totalProducts: number }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-lg bg-background shadow-lg flex flex-col">
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-semibold">Rule Impact Preview</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {data.length} products will be affected out of {totalProducts} total.
+          </p>
+        </div>
+        <div className="overflow-auto p-0 flex-1">
+          {data.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              No products match this rule's conditions.
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 sticky top-0">
+                <tr className="border-b">
+                  <th className="h-10 px-4 text-left font-medium">Product</th>
+                  <th className="h-10 px-4 text-right font-medium">Current Price</th>
+                  <th className="h-10 px-4 text-right font-medium">New Price</th>
+                  <th className="h-10 px-4 text-right font-medium">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item.id} className="border-b hover:bg-muted/50 transition-colors">
+                    <td className="p-4 font-medium">{item.name}</td>
+                    <td className="p-4 text-right">₹{item.currentPrice.toLocaleString()}</td>
+                    <td className="p-4 text-right font-bold text-primary">₹{item.newPrice.toLocaleString()}</td>
+                    <td className={`p-4 text-right ${parseFloat(item.changePercentage) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {parseFloat(item.changePercentage) > 0 ? '+' : ''}{item.changePercentage}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="p-4 border-t bg-muted/20 flex justify-end">
+          <Button onClick={onClose}>Close Preview</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const getAuthToken = () => localStorage.getItem("token");
 
 export default function Rules() {
   const [rules, setRules] = useState<PricingRule[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [voiceResponse, setVoiceResponse] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<PreviewItem[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [totalProductsCount, setTotalProductsCount] = useState(0);
 
   useEffect(() => {
     fetchRules();
@@ -165,9 +228,11 @@ export default function Rules() {
         body: JSON.stringify(activeRule)
       });
       const data = await res.json();
-      
+
       if (data.success) {
-        alert(`📊 Impact Preview:\n\n${data.affectedCount} products will be affected\nout of ${data.totalProducts} total products`);
+        setPreviewData(data.data);
+        setTotalProductsCount(data.totalProducts);
+        setShowPreview(true);
       }
     } catch (error) {
       console.error('Preview error:', error);
@@ -179,7 +244,7 @@ export default function Rules() {
   const handleVoiceQuery = async (queryText: string) => {
     setLoading(true);
     setVoiceResponse("");
-    
+
     try {
       const res = await fetch(`${API_URL}/pricing-rules/voice-query`, {
         method: 'POST',
@@ -189,9 +254,9 @@ export default function Rules() {
         },
         body: JSON.stringify({ queryText })
       });
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         setVoiceResponse(data.responseText);
       } else {
@@ -401,11 +466,10 @@ export default function Rules() {
             <button
               onClick={startVoiceRecognition}
               disabled={isListening || loading}
-              className={`relative h-24 w-24 rounded-full transition-all ${
-                isListening 
-                  ? 'bg-red-500 animate-pulse' 
-                  : 'bg-primary hover:bg-primary/90'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`relative h-24 w-24 rounded-full transition-all ${isListening
+                ? 'bg-red-500 animate-pulse'
+                : 'bg-primary hover:bg-primary/90'
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Mic className="h-10 w-10 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </button>
@@ -431,6 +495,13 @@ export default function Rules() {
           </CardContent>
         </Card>
       </div>
+
+      <PreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        data={previewData}
+        totalProducts={totalProductsCount}
+      />
     </div>
   );
 }

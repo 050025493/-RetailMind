@@ -1,9 +1,9 @@
 // backend/src/controllers/promoController.js
 import Product from '../models/Product.js';
 import { PromoSimulation, PromoCampaign, ProductReview } from '../models/PromoSimulator.js';
-import { 
-  getProductSentiment, 
-  calculateSentimentImpact, 
+import {
+  getProductSentiment,
+  calculateSentimentImpact,
   getAvgDailySales,
   generateDemoReviews,
   analyzeSentiment
@@ -40,8 +40,22 @@ export const simulatePromo = async (req, res) => {
       });
     }
 
-    // Get sentiment analysis
-    const sentimentData = await getProductSentiment(productId);
+    // Get sentiment analysis with fallback
+    let sentimentData;
+    try {
+      sentimentData = await getProductSentiment(productId);
+    } catch (err) {
+      console.warn("Sentiment API failed, using neutral fallback:", err.message);
+      sentimentData = {
+        avgSentiment: 0,
+        sentiment: 'neutral',
+        label: 'NEUTRAL',
+        score: 0.5,
+        distribution: { positive: 0, neutral: 100, negative: 0 },
+        reviewCount: 1, // Default to 1 to avoid division by zero in frontend
+        trend: 'stable'
+      };
+    }
 
     // Get average daily sales
     const avgDailySales = await getAvgDailySales(productId, 30);
@@ -56,7 +70,7 @@ export const simulatePromo = async (req, res) => {
 
     // Base demand lift
     const demandLift = sentimentImpact.demandLift;
-    
+
     // Predicted units sold
     const baseUnits = avgDailySales * durationDays;
     const predictedUnits = Math.round(baseUnits * (1 + demandLift / 100));
@@ -64,7 +78,7 @@ export const simulatePromo = async (req, res) => {
     // Revenue calculations
     const predictedRevenue = predictedUnits * discountedPrice;
     const normalRevenue = baseUnits * currentPrice;
-    
+
     // Cost calculations
     const totalCost = predictedUnits * costPrice;
     const profit = predictedRevenue - totalCost;

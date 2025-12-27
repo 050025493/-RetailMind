@@ -70,7 +70,7 @@ def train_recursive_model(df):
     model = XGBRegressor(objective="reg:squarederror", random_state=42, n_jobs=-1)
     search = RandomizedSearchCV(
         model, param_distributions=param_dist, n_iter=10, cv=3,
-        scoring="neg_mean_absolute_error", n_jobs=-1, random_state=42,
+        scoring="neg_mean_absolute_error", n_jobs=1, random_state=42,
     )
     search.fit(X, y)
     return search.best_estimator_

@@ -404,9 +404,13 @@ const checkRuleCondition = async (product, rule) => {
         limit: 14,
       });
 
-      if (history.length < 14) return false;
-      const recent = history.slice(0, 7).reduce((a, b) => a + b.quantity_sold, 0) / 7;
-      const past = history.slice(7, 14).reduce((a, b) => a + b.quantity_sold, 0) / 7;
+      if (history.length < 3) return false; // meaningful trend needs at least 3 days
+
+      // Use available data up to 14 days
+      const midPoint = Math.floor(history.length / 2);
+      const recent = history.slice(0, midPoint).reduce((a, b) => a + b.quantity_sold, 0) / midPoint;
+      const past = history.slice(midPoint).reduce((a, b) => a + b.quantity_sold, 0) / (history.length - midPoint);
+
       const demandChange = ((recent - past) / (past || 1)) * 100;
 
       return evaluateCondition(demandChange, rule.conditionOperator, threshold);
@@ -419,9 +423,12 @@ const checkRuleCondition = async (product, rule) => {
         limit: 14,
       });
 
-      if (history.length < 14) return false;
-      const recent = history.slice(0, 7).reduce((a, b) => a + b.quantity_sold, 0) / 7;
-      const past = history.slice(7, 14).reduce((a, b) => a + b.quantity_sold, 0) / 7;
+      if (history.length < 3) return false;
+
+      const midPoint = Math.floor(history.length / 2);
+      const recent = history.slice(0, midPoint).reduce((a, b) => a + b.quantity_sold, 0) / midPoint;
+      const past = history.slice(midPoint).reduce((a, b) => a + b.quantity_sold, 0) / (history.length - midPoint);
+
       const demandChange = ((recent - past) / (past || 1)) * 100;
 
       return evaluateCondition(-demandChange, rule.conditionOperator, threshold);

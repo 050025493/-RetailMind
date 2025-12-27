@@ -94,9 +94,16 @@ export const getRevenueTrend = async (req, res) => {
 
     const result = await query(revenueQuery, [userId]);
 
+    // Fix: Cast numeric strings to numbers for Recharts
+    const formattedData = result.rows.map(row => ({
+      ...row,
+      revenue: parseFloat(row.revenue),
+      units_sold: parseInt(row.units_sold)
+    }));
+
     res.status(200).json({
       success: true,
-      data: result.rows,
+      data: formattedData,
     });
   } catch (error) {
     console.error('Revenue trend error:', error);
@@ -123,7 +130,7 @@ export const getCategorySales = async (req, res) => {
         COUNT(DISTINCT p.id) as product_count
       FROM products p
       LEFT JOIN demand_data dd ON dd.product_id = p.id
-        AND dd.date >= NOW() - INTERVAL '30 days'
+        AND dd.date >= NOW() - INTERVAL '6 months'
       WHERE p.user_id = $1 AND p.category IS NOT NULL
       GROUP BY p.category
       ORDER BY sales DESC NULLS LAST
@@ -132,9 +139,17 @@ export const getCategorySales = async (req, res) => {
 
     const result = await query(categoryQuery, [userId]);
 
+    // Fix: Cast numeric strings to numbers for Recharts
+    const formattedData = result.rows.map(row => ({
+      ...row,
+      sales: parseFloat(row.sales),
+      units_sold: parseInt(row.units_sold),
+      product_count: parseInt(row.product_count)
+    }));
+
     res.status(200).json({
       success: true,
-      data: result.rows,
+      data: formattedData,
     });
   } catch (error) {
     console.error('Category sales error:', error);
@@ -150,43 +165,32 @@ export const getCategorySales = async (req, res) => {
 // @route   GET /api/dashboard/alerts
 // @access  Private
 export const getAlerts = async (req, res) => {
-  // --- THIS IS A FIX ---
-  // Return an empty array for now, because the 'alerts' table doesn't exist
-  return res.status(200).json({
-    success: true,
-    count: 0,
-    data: [],
-  });
-  // --- END FIX ---
-  
-  /*
   try {
     const userId = req.user.id;
-    const limit = req.query.limit || 10;
 
-    const alertsQuery = `
-      SELECT 
-        a.id,
-        a.alert_type,
-        a.severity,
-        a.message,
-        a.is_read,
-        a.created_at,
-        p.name as product_name,
-        p.id as product_id
-      FROM alerts a
-      LEFT JOIN products p ON p.id = a.product_id
-      WHERE a.user_id = $1
-      ORDER BY a.created_at DESC
-      LIMIT $2
+    // Generate real alerts based on actual data
+    // 1. Check for low stock items
+    const lowStockQuery = `
+      SELECT id, name, stock_quantity 
+      FROM products 
+      WHERE user_id = $1 AND stock_quantity <= 10
+      LIMIT 5
     `;
+    const lowStockResult = await query(lowStockQuery, [userId]);
 
-    const result = await query(alertsQuery, [userId, limit]);
+    const realAlerts = lowStockResult.rows.map(product => ({
+      id: `stock_${product.id}`,
+      alert_type: 'stock_level',
+      severity: product.stock_quantity === 0 ? 'high' : 'medium',
+      message: `Low stock warning for "${product.name}" (${product.stock_quantity} units left)`,
+      is_read: false,
+      created_at: new Date().toISOString()
+    }));
 
     res.status(200).json({
       success: true,
-      count: result.rows.length,
-      data: result.rows,
+      count: realAlerts.length,
+      data: realAlerts,
     });
   } catch (error) {
     console.error('Get alerts error:', error);
@@ -196,7 +200,6 @@ export const getAlerts = async (req, res) => {
       error: error.message,
     });
   }
-  */
 };
 
 // @desc    Mark alert as read
@@ -210,7 +213,7 @@ export const markAlertRead = async (req, res) => {
     data: { id: req.params.id, is_read: true },
   });
   // --- END FIX ---
-  
+
   /*
   try {
     const { id } = req.params;
@@ -266,7 +269,7 @@ export const getTopProducts = async (req, res) => {
       FROM products p
       JOIN demand_data dd ON dd.product_id = p.id
       WHERE p.user_id = $1
-        AND dd.date >= NOW() - INTERVAL '30 days'
+        AND dd.date >= NOW() - INTERVAL '6 months'
       GROUP BY p.id, p.name, p.current_price, p.category
       ORDER BY total_revenue DESC
       LIMIT $2

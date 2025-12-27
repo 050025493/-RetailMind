@@ -1,4 +1,4 @@
-import { Home, TrendingUp, DollarSign, Users, Tag, Sliders, FileText, User, LogOut } from "lucide-react";
+import { Home, TrendingUp, DollarSign, Users, Tag, Sliders, FileText, User, LogOut, BoxIcon } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -19,9 +19,9 @@ export function AppSidebar() {
     { icon: TrendingUp, label: "Demand Forecast", path: "/forecast" },
     { icon: DollarSign, label: "Smart Pricing", path: "/pricing" },
     { icon: Users, label: "Competitor Watch", path: "/competitors" },
-    { icon: Tag, label: "Promo Simulator", path: "/promo" },
     { icon: Sliders, label: "What-If Scenarios", path: "/scenarios" },
     { icon: FileText, label: "Auto-Pricing Rules", path: "/rules" },
+    { icon: BoxIcon, label: "Products", path: "/products" },
   ];
 
   const handleLogout = () => {

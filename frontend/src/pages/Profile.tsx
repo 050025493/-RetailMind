@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/buttonVariants";
 import { Input } from "@/components/ui/Input";
 import { User, Mail, Building, Lock, Globe, Bell, Shield, LogOut, Save, Eye, EyeOff } from "lucide-react";
 
+// Add API URL constant
+const API_URL = 'http://localhost:4000/api';
+
 interface UserProfile {
   id: number;
   name: string;
@@ -108,19 +111,19 @@ export default function Profile() {
     weeklyReports: false,
     twoFactorAuth: false,
   });
-  
+
   const [passwords, setPasswords] = useState({
     current: '',
     new: '',
     confirm: ''
   });
-  
+
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
     confirm: false
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -181,7 +184,7 @@ export default function Profile() {
 
   const handleSaveProfile = async () => {
     if (!editedUser) return;
-    
+
     setLoading(true);
     setMessage(null);
 
@@ -226,20 +229,26 @@ export default function Profile() {
 
     try {
       // TODO: Replace with actual API call
-      // const response = await fetch('/api/users/change-password', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     currentPassword: passwords.current,
-      //     newPassword: passwords.new
-      //   })
-      // });
+      const response = await fetch(`${API_URL || 'http://localhost:4000/api'}/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          currentPassword: passwords.current,
+          newPassword: passwords.new
+        })
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to change password');
+      }
+
+      // Simulate API call removal
+      // await new Promise(resolve => setTimeout(resolve, 1000));
 
       setMessage({ type: 'success', text: t.passwordSuccess });
       setPasswords({ current: '', new: '', confirm: '' });
@@ -274,11 +283,10 @@ export default function Profile() {
 
       {/* Success/Error Messages */}
       {message && (
-        <Card className={`border-2 ${
-          message.type === 'success' 
-            ? 'border-green-500 bg-green-50 dark:bg-green-900/10' 
-            : 'border-red-500 bg-red-50 dark:bg-red-900/10'
-        }`}>
+        <Card className={`border-2 ${message.type === 'success'
+          ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
+          : 'border-red-500 bg-red-50 dark:bg-red-900/10'
+          }`}>
           <CardContent className="p-4">
             <p className={message.type === 'success' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}>
               {message.text}
@@ -427,8 +435,8 @@ export default function Profile() {
               </div>
             </div>
 
-            <Button 
-              onClick={handleChangePassword} 
+            <Button
+              onClick={handleChangePassword}
               disabled={loading || !passwords.current || !passwords.new || !passwords.confirm}
               className="w-full"
             >
@@ -444,14 +452,12 @@ export default function Profile() {
                 </div>
                 <button
                   onClick={() => handleSettingToggle('twoFactorAuth')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.twoFactorAuth ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.twoFactorAuth ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
@@ -497,14 +503,12 @@ export default function Profile() {
                   </div>
                   <button
                     onClick={() => handleSettingToggle('emailNotifications')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.emailNotifications ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.emailNotifications ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        settings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -517,14 +521,12 @@ export default function Profile() {
                   </div>
                   <button
                     onClick={() => handleSettingToggle('priceAlerts')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.priceAlerts ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.priceAlerts ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        settings.priceAlerts ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.priceAlerts ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -537,14 +539,12 @@ export default function Profile() {
                   </div>
                   <button
                     onClick={() => handleSettingToggle('weeklyReports')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.weeklyReports ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.weeklyReports ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        settings.weeklyReports ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.weeklyReports ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
