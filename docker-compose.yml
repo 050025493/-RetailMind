@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DATABASE_URL=${DATABASE_URL} # External DB URL from .env or shell
+      - AI_SERVICE_URL=http://ml_service:5001
+      - PYTHON_PATH=python3
+    depends_on:
+      - ml_service
+
+  ml_service:
+    build:
+      context: ./backend/ml_models
+    ports:
+      - "5001:5001"

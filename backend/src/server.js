@@ -9,7 +9,7 @@ import dashboardRoutes from "./routes/dashboard.js";
 import competitorRoutes from "./routes/competitors.js";
 import scenarioRoutes from "./routes/scenarioRoutes.js";
 import forecastRoutes from "./routes/forecast.js";
-import pricingroutes from "./routes/pricingRules.js"; 
+import pricingroutes from "./routes/pricingRules.js";
 import pricingRoutes from './routes/pricing.js';
 import promoRoutes from './routes/promo.js';
 import salesDataRoutes from "./routes/salesData.js";
@@ -36,7 +36,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -67,7 +67,7 @@ app.use("/api/sales-data", salesDataRoutes);
 // Sync Database
 sequelize.sync({ alter: true }).then(() => {
   console.log("📦 Database synced");
- 
+
 });
 
 app.get("/", (req, res) => res.send("Backend running ✅"));

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/buttonVariants";
+import { Skeleton } from "@/components/ui/Skeleton";
 import {
   LineChart,
   Line,
@@ -150,12 +151,30 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    // ... (Loading UI) ...
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-[200px]" />
+            <Skeleton className="h-4 w-[300px]" />
+          </div>
+          <Skeleton className="h-10 w-[120px]" />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[120px] rounded-xl" />
+          ))}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-[400px] rounded-xl" />
+          <Skeleton className="h-[400px] rounded-xl" />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-[300px] rounded-xl" />
+          <Skeleton className="h-[300px] rounded-xl" />
         </div>
       </div>
     );
@@ -193,11 +212,11 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Dashboard</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
           <p className="mt-1 text-muted-foreground">
             Real-time insights and product performance metrics
           </p>
@@ -226,7 +245,7 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {statsCards.map((stat) => (
-            <Card key={stat.title}>
+            <Card key={stat.title} className="hover:shadow-lg hover:border-primary/20 transition-all duration-300 transform hover:-translate-y-1">
               {/* ... (Card JSX) ... */}
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -238,10 +257,10 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold">{stat.value}</div>
                 <p
                   className={`text-xs ${stat.trend === "up"
-                      ? "text-green-500"
-                      : stat.trend === "neutral"
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                    ? "text-green-500"
+                    : stat.trend === "neutral"
+                      ? "text-yellow-500"
+                      : "text-red-500"
                     }`}
                 >
                   {stat.change}
@@ -254,7 +273,7 @@ export default function Dashboard() {
         {/* Revenue Trend & Category Sales */}
         <div className="grid gap-4 md:grid-cols-2">
 
-          <Card ref={revenueChartRef}>
+          <Card ref={revenueChartRef} className="hover:shadow-lg hover:border-primary/20 transition-all duration-300">
             <CardHeader>
               <CardTitle>Revenue Trend (Last 6 Months)</CardTitle>
             </CardHeader>
@@ -286,7 +305,7 @@ export default function Dashboard() {
           </Card>
 
           {/* --- MODIFIED: Added ref to this Card --- */}
-          <Card ref={categoryChartRef}>
+          <Card ref={categoryChartRef} className="hover:shadow-lg hover:border-primary/20 transition-all duration-300">
             <CardHeader>
               <CardTitle>Sales by Category</CardTitle>
             </CardHeader>
@@ -319,7 +338,7 @@ export default function Dashboard() {
         {/* Top Products & Alerts */}
         <div className="grid gap-4 md:grid-cols-2">
           {/* ... (Top Products and Alerts cards) ... */}
-          <Card>
+          <Card className="hover:shadow-lg hover:border-primary/20 transition-all duration-300">
             <CardHeader>
               <CardTitle>Top Products by Revenue</CardTitle>
             </CardHeader>
@@ -350,7 +369,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg hover:border-primary/20 transition-all duration-300">
             <CardHeader>
               <CardTitle>Recent Alerts</CardTitle>
             </CardHeader>
@@ -361,8 +380,8 @@ export default function Dashboard() {
                     <div
                       key={a.id}
                       className={`p-3 rounded-lg border ${a.severity === "high"
-                          ? "border-red-500/40 bg-red-500/10 text-red-600"
-                          : "border-blue-500/40 bg-blue-500/10 text-blue-600"
+                        ? "border-red-500/40 bg-red-500/10 text-red-600"
+                        : "border-blue-500/40 bg-blue-500/10 text-blue-600"
                         }`}
                     >
                       <div className="flex justify-between">
